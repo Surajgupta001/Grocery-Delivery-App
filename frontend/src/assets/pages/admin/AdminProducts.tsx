@@ -13,6 +13,7 @@ export default function AdminProducts() {
     const [loading, setLoading] = useState(true);
 
     const fetchProducts = async () => {
+        await Promise.resolve();
         setProducts(dummyProducts);
         setTimeout(() => {
             setLoading(false);
