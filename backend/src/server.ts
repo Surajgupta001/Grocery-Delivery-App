@@ -5,6 +5,7 @@ import "dotenv/config";
 
 import authRouter from "./routes/auth.routes";
 import { handleError } from "./utils/utils";
+import productRouter from "./routes/products.routes";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -21,6 +22,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // Routes
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/products", productRouter);
 
 // Error Middleware (ALWAYS LAST)
 app.use(handleError);
