@@ -1,8 +1,8 @@
 import { LogOutIcon, TruckIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import type { DeliveryPartner } from "../../../types";
 import { dummyDeliveryPartnerData } from "../../assets/assets";
+import type { DeliveryPartner } from "../../types";
 
 export default function DeliveryLayout() {
     const navigate = useNavigate();

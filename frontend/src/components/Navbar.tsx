@@ -27,7 +27,7 @@ export function Navbar() {
     const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!searchQuery.trim()) {
+        if (searchQuery.trim()) {
             navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
             setSearchQuery('');
         }
