@@ -1,8 +1,8 @@
 import { MailIcon, PhoneIcon, PlusIcon, TruckIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { DeliveryPartner } from "../../../types";
 import { dummyDeliveryPartnerData } from "../../assets/assets";
 import Loading from "../../components/Loading";
+import type { DeliveryPartner } from "../../types";
 
 export default function AdminDeliveryPartners() {
     const [partners, setPartners] = useState<DeliveryPartner[]>([]);
@@ -20,9 +20,13 @@ export default function AdminDeliveryPartners() {
         fetchPartners();
     }, []);
 
-    const handleSubmit = async (e: React.SubmitEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        setSaving(true);
+        setTimeout(() => {
+            setSaving(false);
+            setShowForm(false);
+        }, 1000);
     };
 
     const toggleActive = async (id: string, isActive: boolean) => {

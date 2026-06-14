@@ -47,7 +47,7 @@ export function Products() {
     };
 
     const activeCategory = categoriesData.find((c) => c.slug === category);
-    const hasFilters = category || organic || minPrice || maxPrice;
+    const hasFilters = Boolean(category || organic || minPrice || maxPrice);
 
     useEffect(() => {
         fetchProducts();
@@ -56,6 +56,7 @@ export function Products() {
     return (
         <div className="min-h-screen bg-app-cream">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                
                 {/* BreadCrumb */}
                 <nav className="flex items-center gap-2 text-sm text-app-text-light mb-6">
                     <Link to='/' className="hover:text-app-green transition-colors">
@@ -65,6 +66,7 @@ export function Products() {
                     <span className="text-app-green font-medium">{activeCategory ? activeCategory.name : "All Products"}</span>
                 </nav>
                 <div className="flex gap-8 xl:gap-10">
+                    
                     {/* Sidebar - Desktop */}
                     <aside className="hidden lg:block w-64 shrink-0">
                         <div className="bg-white rounded-2xl p-4 sticky top-24">
@@ -79,8 +81,10 @@ export function Products() {
                             />
                         </div>
                     </aside>
+                    
                     {/* Main Content */}
                     <main className="flex-1">
+                        
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6">
                             <div>
@@ -88,10 +92,12 @@ export function Products() {
                                 <p className="text-sm text-app-text-light mt-0.5">{products.length} products found</p>
                             </div>
                             <div className="flex flex-col lg:items-center gap-3">
+                                
                                 {/* Mobile Filter Toggle */}
                                 <button onClick={() => setMobileFiltersOpen(true)} className="lg:hidden flex items-center gap-2 px-3 py-2 text-sm bg-white rounded-xl border border-app-border hover:bg-app-cream transition-colors">
                                     <SlidersHorizontal className="size-4" /> Filters
                                 </button>
+                                
                                 {/* Sort */}
                                 <div className="relative">
                                     <select value={sort} onChange={(e) => updateFilter('sort', e.target.value)} className="appearance-none pl-3 pr-8 py-2 text-sm bg-white rounded-xl border border-app-border focus:border-r-app-green outline-none cursor-pointer">
@@ -105,6 +111,7 @@ export function Products() {
                                 </div>
                             </div>
                         </div>
+                        
                         {/* Products Grid */}
                         {loading ? (
                             <Loading />
@@ -123,6 +130,7 @@ export function Products() {
                                 ))}
                             </div>
                         )}
+                        
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex-center gap-2 mt-16">
@@ -140,6 +148,7 @@ export function Products() {
                     </main>
                 </div>
             </div>
+            
             {/* Mobile Filters Model */}
             {mobileFiltersOpen && (
                 <>
