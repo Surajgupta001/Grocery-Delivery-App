@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { prisma } from "../../config/prisma";
+import { prisma } from "../../config/prisma.js";
 
 // Get user addresses
 // GET /api/addresses

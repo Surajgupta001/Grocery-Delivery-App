@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { prisma } from "../../config/prisma";
+import { prisma } from "../../config/prisma.js";
 import bcrypt from 'bcryptjs';
-import { generateToken } from "../utils/utils";
+import { generateToken } from "../utils/utils.js";
 
 // Login Delivery Partner
 // POST /api/v1/delivery-partners/Login

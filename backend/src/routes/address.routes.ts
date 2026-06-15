@@ -1,6 +1,6 @@
 import express from "express";
-import { auth } from "../../middlewares/auth.middlewares";
-import { addAddress, deleteAddress, getAddresses, updateAddress } from "../controllers/address.controllers";
+import { auth } from "../../middlewares/auth.middlewares.js";
+import { addAddress, deleteAddress, getAddresses, updateAddress } from "../controllers/address.controllers.js";
 
 const addressRouter = express.Router();
 

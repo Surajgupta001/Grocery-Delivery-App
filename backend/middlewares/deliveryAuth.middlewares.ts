@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { prisma } from "../config/prisma";
+import { prisma } from "../config/prisma.js";
 
 export const deliveryAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {

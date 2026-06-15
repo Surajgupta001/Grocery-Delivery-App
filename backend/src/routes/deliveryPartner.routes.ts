@@ -7,8 +7,8 @@ import {
     loginDeliveryPartner,
     updateLiveLocation,
     updateOrderStatusByPartner
-} from '../controllers/deliveryPartner.controllers';
-import { deliveryAuth } from '../../middlewares/deliveryAuth.middlewares';
+} from '../controllers/deliveryPartner.controllers.js';
+import { deliveryAuth } from '../../middlewares/deliveryAuth.middlewares.js';
 
 const deliveryPartnerRouter = express.Router();
 
