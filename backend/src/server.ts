@@ -2,15 +2,14 @@ import express from "express";
 import type { Request, Response } from "express";
 import cors from "cors";
 import "dotenv/config";
-
-import authRouter from "./routes/auth.routes";
-import { handleError } from "./utils/utils";
-import productRouter from "./routes/products.routes";
-import adminRouter from "./routes/admin.routes";
-import orderRouter from "./routes/order.routes";
-import uploadRouter from "./routes/upload.routes";
+import authRouter from "./routes/auth.routes.js";
+import productRouter from "./routes/products.routes.js";
+import adminRouter from "./routes/admin.routes.js";
+import orderRouter from "./routes/order.routes.js";
+import uploadRouter from "./routes/upload.routes.js";
+import { handleError } from "./utils/utils.js";
+import { functions, inngest } from "./inngest/index.js";
 import { serve } from "inngest/express";
-import { inngest, functions } from "./inngest";
 
 const app = express();
 const port = process.env.PORT || 5000;

@@ -1,6 +1,6 @@
 import { Inngest } from "inngest";
-import { prisma } from "../../config/prisma";
-import { sendEmail } from "../../config/nodemailer";
+import { prisma } from "../../config/prisma.js";
+import { sendEmail } from "../../config/nodemailer.js";
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -114,7 +114,7 @@ const sendMonthlyOffers = inngest.createFunction(
                     users: allUsers,
                 }
             }
-        )
+        ) as { deals: any[]; users: any[] };
 
         if (users.length === 0 || deals.length === 0) {
             return {
@@ -151,7 +151,7 @@ const sendMonthlyOffers = inngest.createFunction(
 
                     <table width="100%" cellpadding="0" cellspacing="0">
                         ${deals
-                                .reduce((rows: any, _, i: number) => {
+                                .reduce((rows: any, _: any, i: number) => {
                                     if (i % 3 === 0) {
                                         rows.push(deals.slice(i, i + 3));
                                     }
@@ -260,8 +260,8 @@ const autoAssignRider = inngest.createFunction(
                 })
 
                 const busyRiderIds = busyOrder
-                    .map(o => o.deliveryPartnerId)
-                    .filter((id): id is string => id !== null && id !== undefined);
+                    .map((o: any) => o.deliveryPartnerId)
+                    .filter((id: any): id is string => id !== null && id !== undefined);
 
                 const availableRider = await prisma.deliveryPartner.findFirst({
                     where: {

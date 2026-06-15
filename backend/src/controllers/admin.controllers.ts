@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { prisma } from "../../config/prisma";
+import { prisma } from "../../config/prisma.js";
 
 // UPdate order status - Admin Only
 // PUT /api/v1/orders/:id/status

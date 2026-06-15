@@ -2,6 +2,7 @@
   "name": "backend",
   "module": "src/server.ts",
   "private": true,
+  "type": "module",
   "scripts": {
     "postinstall": "bunx prisma generate",
     "start": "bun src/server.ts",

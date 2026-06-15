@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { prisma } from "../config/prisma";
+import { prisma } from "../config/prisma.js";
 
 export const admin = async (req: Request, res: Response, next: NextFunction) => {
     try {
