@@ -6,6 +6,7 @@ declare global {
             user?: {
                 id: string;
                 isAdmin?: boolean;
+                role?: string;
             }
             partner?: DeliveryPartner;
         }
