@@ -1,26 +1,20 @@
 {
-  "compilerOptions": {
-    // Environment setup & latest features
-    "lib": [
-      "ESNext"
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "nodenext",
+        "moduleResolution":"nodenext",
+        "outDir": "./dist",
+        "rootDir": "./",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [
+        "./**/*.ts"
     ],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "allowJs": true,
-    // Bundler mode
-    "noEmit": false,
-    "outDir": "dist",
-    // Best practices
-    "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
-  }
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
 }

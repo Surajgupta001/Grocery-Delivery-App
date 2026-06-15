@@ -10,12 +10,13 @@ export const transporter = createTransport({
   },
 });
 
-try {
-  await transporter.verify();
-  console.log("Server is ready to take our messages");
-} catch (err) {
-  console.error("Verification failed:", err);
-}
+transporter.verify()
+  .then(() => {
+    console.log("Server is ready to take our messages");
+  })
+  .catch((err) => {
+    console.error("Verification failed:", err);
+  });
 
 export const sendEmail = async ({ to, subject, body } : { to: string; subject: string; body: string }) => {
     try {
