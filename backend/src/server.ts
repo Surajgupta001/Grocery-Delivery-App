@@ -10,7 +10,7 @@ import adminRouter from "./routes/admin.routes";
 import orderRouter from "./routes/order.routes";
 import uploadRouter from "./routes/upload.routes";
 import { serve } from "inngest/express";
-import { inngest, functions } from "../src/inngest/index";
+import { inngest, functions } from "./inngest";
 
 const app = express();
 const port = process.env.PORT || 5000;
