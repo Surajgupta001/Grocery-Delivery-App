@@ -20,9 +20,15 @@ transporter.verify()
 
 export const sendEmail = async ({ to, subject, body } : { to: string; subject: string; body: string }) => {
     try {
+        // Automatically redirect dummy emails (ending in @example.com) to your verified SENDER_EMAIL for local testing
+        const recipient = to.split(',')
+            .map(email => email.trim())
+            .map(email => email.endsWith('@example.com') ? (process.env.SENDER_EMAIL || email) : email)
+            .join(',');
+
         const response = await transporter.sendMail({
             from: process.env.SENDER_EMAIL,
-            to,
+            to: recipient,
             subject,
             html: body,
         })

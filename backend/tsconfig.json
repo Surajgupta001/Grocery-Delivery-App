@@ -4,9 +4,8 @@
       "ESNext"
     ],
     "target": "ESNext",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "jsx": "react-jsx",
     "allowJs": true,
     "noEmit": false,
