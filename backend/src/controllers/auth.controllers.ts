@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 import { prisma } from '../../config/prisma';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { generateToken, getAdminStatus } from '../utils/utils';
 
 // Register
