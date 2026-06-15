@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../config/prisma";
+import { inngest } from "../inngest";
 
 // Create Order
 // POST /api/v1/orders
@@ -109,6 +110,23 @@ export const createOrder = async (req: Request, res: Response) => {
                 },
             });
         }
+
+        // Send stock update events for each product in the order
+        for (const item of orderItems) {
+            await inngest.send({
+                name: 'inventory/stock.updated',
+                data: {
+                    productId: item.product,
+                }
+            })
+        }
+
+        await inngest.send({
+            name: 'order/placed',
+            data: {
+                orderId: order.id,
+            }
+        })
     } catch (error) {
         console.error("Error creating order:", error);
         return res

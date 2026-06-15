@@ -9,6 +9,8 @@ import productRouter from "./routes/products.routes";
 import adminRouter from "./routes/admin.routes";
 import orderRouter from "./routes/order.routes";
 import uploadRouter from "./routes/upload.routes";
+import { serve } from "inngest/express";
+import { inngest, functions } from "../src/inngest/index";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -29,6 +31,8 @@ app.use("/api/v1/products", productRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/upload", uploadRouter);
+// Set up the "/api/inngest" (recommended) routes with the serve handler
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
 // Error Middleware (ALWAYS LAST)
 app.use(handleError);
