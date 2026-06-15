@@ -14,9 +14,9 @@ export const handleError = (error: any, req: Request, res: Response, next: NextF
 };
 
 // Generate JWT Token
-export const generateToken = (id: string) => {
+export const generateToken = (id: string, role: string = "user") => {
     return jwt.sign(
-        { id },
+        { id, role },
         process.env.JWT_SECRET as string,
         {
             expiresIn: "30d",

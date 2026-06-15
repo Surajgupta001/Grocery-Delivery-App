@@ -11,6 +11,8 @@ import orderRouter from "./routes/order.routes";
 import uploadRouter from "./routes/upload.routes";
 import { serve } from "inngest/express";
 import { inngest, functions } from "../src/inngest/index";
+import addressRouter from "./routes/address.routes";
+import deliveryPartnerRouter from "./routes/deliveryPartner.routes";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,11 +35,17 @@ app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/upload", uploadRouter);
 // Set up the "/api/inngest" (recommended) routes with the serve handler
 app.use("/api/inngest", serve({ client: inngest, functions }));
+app.use('/api/v1/addresses', addressRouter);
+app.use('/api/v1/delivery', deliveryPartnerRouter);
 
 // Error Middleware (ALWAYS LAST)
 app.use(handleError);
 
 // Start Server
-app.listen(port, () => {
-  console.log(`🚀 Server is running on port ${port}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`🚀 Server is running on port ${port}`);
+  });
+}
+
+export default app;

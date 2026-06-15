@@ -1,7 +1,6 @@
-import express from 'express';
 import type { Request, Response } from 'express';
 import { prisma } from '../../config/prisma';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { generateToken, getAdminStatus } from '../utils/utils';
 
 // Register
@@ -46,12 +45,13 @@ export const register = async (req: Request, res: Response) => {
         }
     })
 
-    const token = generateToken(user.id);
+    const isAdmin = getAdminStatus(user.email);
+    const token = generateToken(user.id, isAdmin ? "admin" : "user");
 
     const userDate: any = { ...user };
     delete userDate.password;
 
-    userDate.isAdmin = getAdminStatus(userDate.email);
+    userDate.isAdmin = isAdmin;
 
     res.status(201).json({
         success: true,
@@ -108,15 +108,17 @@ export const login = async (req: Request, res: Response) => {
             });
     }
 
+    // Determine admin status
+    const isAdmin = getAdminStatus(user.email);
+
     // Generate token
-    const token = generateToken(user.id);
+    const token = generateToken(user.id, isAdmin ? "admin" : "user");
 
     // Remove password from user data
     const userData: any = { ...user };
     delete userData.password;
 
-    // Determine admin status
-    userData.isAdmin = getAdminStatus(userData.email);
+    userData.isAdmin = isAdmin;
 
     res.status(200).json({
         success: true,
