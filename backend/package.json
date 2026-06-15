@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "postinstall": "bunx prisma generate",
     "start": "bun src/server.ts",
     "server": "nodemon --exec bun src/server.ts",
     "build": "tsc"
