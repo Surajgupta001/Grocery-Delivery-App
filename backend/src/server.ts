@@ -6,6 +6,9 @@ import "dotenv/config";
 import authRouter from "./routes/auth.routes";
 import { handleError } from "./utils/utils";
 import productRouter from "./routes/products.routes";
+import adminRouter from "./routes/admin.routes";
+import orderRouter from "./routes/order.routes";
+import uploadRouter from "./routes/upload.routes";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -23,6 +26,9 @@ app.get("/", (req: Request, res: Response) => {
 // Routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/products", productRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/orders", orderRouter);
+app.use("/api/v1/upload", uploadRouter);
 
 // Error Middleware (ALWAYS LAST)
 app.use(handleError);
