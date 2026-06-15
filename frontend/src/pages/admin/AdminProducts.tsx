@@ -1,9 +1,9 @@
 import { EditIcon, PlusIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type { Product } from "../../../types";
 import { dummyProducts } from "../../assets/assets";
 import Loading from "../../components/Loading";
+import type { Product } from "../../types";
 
 export default function AdminProducts() {
 
@@ -13,6 +13,7 @@ export default function AdminProducts() {
     const [loading, setLoading] = useState(true);
 
     const fetchProducts = async () => {
+        await Promise.resolve();
         setProducts(dummyProducts);
         setTimeout(() => {
             setLoading(false);

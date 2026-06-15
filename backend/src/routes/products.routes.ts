@@ -1,7 +1,7 @@
 import express from "express";
-import { createProduct, deleteProduct, getFlashDeals, getProductById, getProducts, updateProduct } from "../controllers/product.controllers";
-import { auth } from "../../middlewares/auth.middlewares";
-import { admin } from "../../middlewares/admin.middlewares";
+import { createProduct, deleteProduct, getFlashDeals, getProductById, getProducts, updateProduct } from "../controllers/product.controllers.js";
+import { auth } from "../../middlewares/auth.middlewares.js";
+import { admin } from "../../middlewares/admin.middlewares.js";
 
 const productRouter = express.Router();
 

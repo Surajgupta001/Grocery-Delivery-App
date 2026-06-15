@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=DM+Serif+Display:ital@0;1&display=swap");
 @import "tailwindcss";
 
+/* Force standard hover behavior in Tailwind v4 */
+@custom-variant hover (&:hover);
+@custom-variant group-hover (.group:hover &);
+
 @theme {
     --color-app-green: #1b3022;
     --color-app-green-light: #2d4a35;

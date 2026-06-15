@@ -1,7 +1,15 @@
 import { ChevronRightIcon, MapPinIcon, PlusIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import type { Address } from '../../types';
 
-const CheckoutAddress = ({ user, address, setAddress, setStep }: any) => {
+interface CheckoutAddressProps {
+    user: { addresses: Address[] };
+    address: Address;
+    setAddress: (address: Address) => void;
+    setStep: (step: string) => void;
+}
+
+const CheckoutAddress = ({ user, address, setAddress, setStep }: CheckoutAddressProps) => {
     return (
         <div className="bg-white rounded-2xl p-6 animate-fade-in">
             <h2 className="text-lg font-semibold text-app-green mb-5 flex items-center gap-2">
@@ -11,18 +19,10 @@ const CheckoutAddress = ({ user, address, setAddress, setStep }: any) => {
                 <div className="mb-6">
                     <h3 className="text-sm font-semibold text-app-green mb-3">Saved Addresses</h3>
                     <div className="grid sm:grid-cols-2 gap-3">
-                        {user.addresses.map((addr: any) => (
+                        {user.addresses.map((addr: Address) => (
                             <div
                                 key={addr._id || addr.label}
-                                onClick={() => setAddress({
-                                    label: addr.label,
-                                    address: addr.address,
-                                    city: addr.city,
-                                    state: addr.state,
-                                    zip: addr.zip,
-                                    lat: addr.lat,
-                                    lng: addr.lng,
-                                })}
+                                onClick={() => setAddress(addr)}
                                 className={`p-4 rounded-xl border cursor-pointer transition-colors ${address.label === addr.label && address.address === addr.address ? 'border-app-green bg-app-cream' : 'border-app-border hover:bg-app-cream'}`}
                             >
                                 <div className="flex items-center gap-2 mb-1">

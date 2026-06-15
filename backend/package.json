@@ -1,8 +1,8 @@
 {
   "name": "backend",
   "module": "src/server.ts",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "postinstall": "prisma generate",
     "start": "bun src/server.ts",

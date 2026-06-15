@@ -1,6 +1,6 @@
 import { CheckCircleIcon, ClockIcon, MapPinIcon, PhoneIcon, TruckIcon, XCircleIcon } from 'lucide-react';
-import type { Order } from '../../../types';
 import { statusColors } from '../../assets/assets';
+import type { Order } from '../../types';
 
 interface DeliveryOrderCardProps {
     order: Order;
