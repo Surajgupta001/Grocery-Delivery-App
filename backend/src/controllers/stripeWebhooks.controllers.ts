@@ -3,10 +3,16 @@ import { prisma } from "../../config/prisma.js";
 import Stripe from "stripe";
 import { inngest } from "../inngest/index.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SIGNING_SECRET;
 
 export const stripeWebhookHandler = async (req: Request, res: Response) => {
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+        console.error("❌ STRIPE_SECRET_KEY is missing from environment variables");
+        return res.status(500).json({ error: "Stripe integration is not configured." });
+    }
+    const stripe = new Stripe(stripeKey);
+
     let event;
     if (endpointSecret) {
         // Get the signature sent by Stripe
