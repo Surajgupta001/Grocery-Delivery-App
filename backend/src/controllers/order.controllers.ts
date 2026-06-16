@@ -94,7 +94,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
             // Create Session
             const session = await stripe.checkout.sessions.create({
-                success_url: `${req.headers.origin}/order?clearCart=true`,
+                success_url: `${req.headers.origin}/orders?clearCart=true`,
                 cancel_url: `${req.headers.origin}/checkout`,
                 line_items: [
                     {
