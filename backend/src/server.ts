@@ -33,7 +33,7 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/upload", uploadRouter);
 // Set up the "/api/inngest" (recommended) routes with the serve handler
-app.use("/api/inngest", serve({ client: inngest, functions }));
+app.use("/api/v1/inngest", serve({ client: inngest, functions }));
 app.use('/api/v1/addresses', addressRouter);
 app.use('/api/v1/delivery', deliveryPartnerRouter);
 
