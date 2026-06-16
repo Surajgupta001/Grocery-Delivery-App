@@ -37,13 +37,30 @@ const allowedOrigins = process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(',').map((o) => o.trim())
     : ['http://localhost:5173'];
 
+const isOriginAllowed = (origin: string): boolean => {
+    // Check if origin matches allowedOrigins list
+    if (allowedOrigins.includes(origin)) {
+        return true;
+    }
+    // Allow local development origins on localhost or 127.0.0.1 (any port)
+    if (/^https?:\/\/localhost:\d+$/.test(origin) || /^https?:\/\/127\.0\.0\.1:\d+$/.test(origin)) {
+        return true;
+    }
+    // Allow any Vercel deployment for the grocery delivery app
+    if (/^https:\/\/grocery-delivery-app.*\.vercel\.app$/.test(origin)) {
+        return true;
+    }
+    return false;
+};
+
 app.use(
     cors({
         origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
+            if (!origin || isOriginAllowed(origin)) {
                 callback(null, true);
             } else {
-                callback(new Error('Not allowed by CORS'));
+                console.warn(`[CORS] Request from origin ${origin} was blocked.`);
+                callback(null, false);
             }
         },
         credentials: true,
