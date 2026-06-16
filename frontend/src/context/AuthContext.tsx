@@ -1,6 +1,8 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import type { User } from "../types";
+import { useNavigate } from "react-router-dom";
 import api from "../config/api";
+import toast from "react-hot-toast";
 
 export interface AuthContextType {
     user: User | null;
@@ -12,74 +14,101 @@ export interface AuthContextType {
     updateUser: (userData: Partial<User>) => void;
 };
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(() => {
-        const storedUser = localStorage.getItem("auth_user");
-        try {
-            return storedUser ? JSON.parse(storedUser) : null;
-        } catch {
-            return null;
-        }
-    });
-    const [token, setToken] = useState<string | null>(() => localStorage.getItem("auth_token"));
-    const [loading, setLoading] = useState<boolean>(true);
+
+    const navigate = useNavigate();
+
+    const [user, setUser] = useState<User | null>(null);
+    const [token, setToken] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const savedToken = localStorage.getItem("auth_token");
+        const savedUser = localStorage.getItem("auth_user");
+
+        if (savedToken && savedUser && savedUser !== "undefined") {
+            try {
+                setUser(JSON.parse(savedUser));
+                setToken(savedToken);
+            } catch (error) {
+                console.error("Failed to parse savedUser from localStorage", error);
+            }
+        }
         setLoading(false);
     }, []);
 
     const login = async (email: string, password: string) => {
-        const response = await api({
-            method: 'get',
-            url: '/v1/auth/login',
-            data: { email, password }
-        });
-        const userData = response.data.data.user;
-        const tokenData = response.data.data.token;
-        const formattedUser = {
-            ...userData,
-            _id: userData.id || userData._id
-        };
-        localStorage.setItem("auth_token", tokenData);
-        localStorage.setItem("auth_user", JSON.stringify(formattedUser));
-        setToken(tokenData);
-        setUser(formattedUser);
+        // Implement login logic here, e.g., call API
+        try {
+            const { data } = await api.post('/auth/login', {
+                email,
+                password,
+            })
+            const { user, token } = data.data;
+            setUser(user);
+            setToken(token);
+            localStorage.setItem("auth_token", token);
+            localStorage.setItem("auth_user", JSON.stringify(user));
+            toast.success("Login successful");
+            navigate("/");
+        } catch (error: any) {
+            console.log("Login failed", error);
+            toast.error(error.response?.data?.message || error.message);
+        }
     };
 
     const register = async (name: string, email: string, password: string) => {
-        const response = await api.post("/v1/auth/register", { name, email, password });
-        const userData = response.data.data.user;
-        const tokenData = response.data.data.token;
-        const formattedUser = {
-            ...userData,
-            _id: userData.id || userData._id
-        };
-        localStorage.setItem("auth_token", tokenData);
-        localStorage.setItem("auth_user", JSON.stringify(formattedUser));
-        setToken(tokenData);
-        setUser(formattedUser);
+        // Implement register logic here, e.g., call API
+        try {
+            const { data } = await api.post('/auth/register', {
+                name,
+                email,
+                password,
+            })
+            const { user, token } = data.data;
+            setUser(user);
+            setToken(token);
+            localStorage.setItem("auth_token", token);
+            localStorage.setItem("auth_user", JSON.stringify(user));
+            toast.success("Registration successful");
+            navigate("/");
+        } catch (error: any) {
+            console.log("Registration failed", error);
+            toast.error(error.response?.data?.message || error.message);
+        }
     };
 
     const logout = () => {
+        setUser(null);
+        setToken(null);
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_user");
-        setToken(null);
-        setUser(null);
-    };
+        toast.success("Logged out successfully");
+        navigate("/login");
+    }
 
     const updateUser = (userData: Partial<User>) => {
         if (user) {
             const updated = { ...user, ...userData };
-            localStorage.setItem("auth_user", JSON.stringify(updated));
             setUser(updated);
+            localStorage.setItem("auth_user", JSON.stringify(updated));
+            toast.success("User updated successfully");
         }
-    };
+    }
 
-    return (
-        <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser }}>
-            {children}
-        </AuthContext.Provider>
-    );
-}
+    return <AuthContext.Provider value={{
+        user,
+        token,
+        loading,
+        login,
+        register,
+        logout,
+        updateUser
+    }}>
+        {children}
+    </AuthContext.Provider>
+};
+
+export default AuthContext;

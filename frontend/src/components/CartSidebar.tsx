@@ -41,24 +41,24 @@ export function CartSidebar() {
                         </div>
                     ) : (
                         items.map((item) => (
-                            <div key={item.product._id} className="flex gap-3 bg-app-cream/60 rounded-xl p-3">
+                            <div key={item.product.id} className="flex gap-3 bg-app-cream/60 rounded-xl p-3">
                                 <img src={item.product.image} alt={item.product.name} className="size-16 object-cover rounded-lg shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-sm font-medium truncate">{item.product.name}</h4>
                                     <p className="text-xs text-app-text-light">{currency}{item.product.price.toFixed(2)} / {item.product.unit}</p>
                                     <div className="flex items-center justify-between mt-2">
                                         <div className="flex items-center gap-1.5">
-                                            <button onClick={() => updateQuantity(item.product._id, item.quantity - 1)} className="size-6 flex items-center justify-center rounded-full bg-app-border text-white">
+                                            <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="size-6 flex items-center justify-center rounded-full bg-app-border text-white">
                                                 <MinusIcon className="size-3" />
                                             </button>
                                             <span className="text-sm font-semibold w-6 text-center">{item.quantity}</span>
-                                            <button onClick={() => updateQuantity(item.product._id, item.quantity + 1)} className="size-6 flex items-center justify-center rounded-full bg-app-border text-white">
+                                            <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="size-6 flex items-center justify-center rounded-full bg-app-border text-white">
                                                 <PlusIcon className="size-3" />
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="font-semibold text-sm">{currency}{(item.product.price * item.quantity).toFixed(2)}</span>
-                                            <button onClick={() => removeFromCart(item.product._id)}>
+                                            <button onClick={() => removeFromCart(item.product.id)}>
                                                 <Trash2Icon className="size-4" />
                                             </button>
                                         </div>

@@ -21,7 +21,7 @@ const CheckoutAddress = ({ user, address, setAddress, setStep }: CheckoutAddress
                     <div className="grid sm:grid-cols-2 gap-3">
                         {user.addresses.map((addr: Address) => (
                             <div
-                                key={addr._id || addr.label}
+                                key={addr.id || addr.label}
                                 onClick={() => setAddress(addr)}
                                 className={`p-4 rounded-xl border cursor-pointer transition-colors ${address.label === addr.label && address.address === addr.address ? 'border-app-green bg-app-cream' : 'border-app-border hover:bg-app-cream'}`}
                             >

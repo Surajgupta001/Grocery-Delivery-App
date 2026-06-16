@@ -2,11 +2,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCart } from "../context/useCart";
 import { useEffect, useState } from "react";
 import type { Product } from "../types";
-import { dummyProducts } from "../assets/assets";
 import Loading from "../components/Loading";
 import { ArrowLeft, ArrowRightIcon, HomeIcon, LeafIcon, MinusIcon, PlusIcon, ShoppingCartIcon, StarIcon } from "lucide-react";
 import { ProductCard } from "../components/ProductCard";
 import DummyReviewsSection from "../assets/DummyReviewsSection";
+import api from "../config/api";
+import toast from "react-hot-toast";
 
 export function ProductPage() {
 
@@ -23,30 +24,26 @@ export function ProductPage() {
     const { items, addToCart, updateQuantity, removeFromCart } = useCart();
 
     useEffect(() => {
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setLoading(true);
+        setLocalQuantity(1);
 
-        const fetchProductData = () => {
-            setLoading(true);
-            setLocalQuantity(1);
-            const foundProduct = dummyProducts.find((p) => p._id === id);
-            setProduct(foundProduct || null);
-
-            if (foundProduct) {
-                // Filter related products of the same category, excluding current product
-                const related = dummyProducts.filter((p) => p.category === foundProduct.category && p._id !== id);
-                setRelatedProducts(related);
-            } else {
-                setRelatedProducts([]);
-            }
-            setLoading(false);
-        };
-
-        const timer = setTimeout(() => {
-            fetchProductData();
-        }, 0);
-
-        return () => clearTimeout(timer);
-    }, [id]);
+        // API
+        api.get(`/products/${id}`)
+            .then((res) => {
+                const productData = res.data.data.product;
+                setProduct(productData);
+                return api.get(`/products?category=${productData.category}`);
+            })
+            .then((res) => {
+                setRelatedProducts((res.data.data.products || []).filter((p: Product) => p.id !== id));
+            })
+            .catch((error) => {
+                navigate("/products");
+                toast.error(error.response?.data?.message || error?.message);
+            })
+            .finally(() => setLoading(false));
+    }, [id, navigate]);
 
     if (loading) {
         return <Loading />;
@@ -65,7 +62,7 @@ export function ProductPage() {
         );
     }
 
-    const cartItem = items.find((item) => item.product._id === product._id);
+    const cartItem = items.find((item) => item.product.id === product.id);
     const inCart = !!cartItem;
     const displayQuantity = inCart ? cartItem.quantity : localQuantity;
 
@@ -75,9 +72,9 @@ export function ProductPage() {
     const handleMinus = () => {
         if (inCart) {
             if (cartItem.quantity > 1) {
-                updateQuantity(product._id, cartItem.quantity - 1);
+                updateQuantity(product.id, cartItem.quantity - 1);
             } else {
-                removeFromCart(product._id);
+                removeFromCart(product.id);
             }
         } else {
             setLocalQuantity(Math.max(1, localQuantity - 1));
@@ -86,7 +83,7 @@ export function ProductPage() {
 
     const handlePlus = () => {
         if (inCart) {
-            updateQuantity(product._id, cartItem.quantity + 1);
+            updateQuantity(product.id, cartItem.quantity + 1);
         } else {
             setLocalQuantity(localQuantity + 1);
         }
@@ -215,7 +212,7 @@ export function ProductPage() {
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 xl:gap-8">
                             {relatedProducts.slice(0, 5).map((rp) => (
-                                <ProductCard key={rp._id} product={rp} />
+                                <ProductCard key={rp.id} product={rp} />
                             ))}
                         </div>
                     </section>

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { categoriesData, dummyProducts } from "../assets/assets";
+import { categoriesData } from "../assets/assets";
 import type { Product } from "../types";
 import { ChevronDown, Home, SlidersHorizontal, XIcon } from "lucide-react";
 import { ProductCard } from "../components/ProductCard";
 import { Loading } from "../components/Loading";
 import { FilterPanel } from "../components/FilterPanel";
+import api from "../config/api";
+import toast from "react-hot-toast";
 
 export function Products() {
 
@@ -24,8 +26,29 @@ export function Products() {
 
     const fetchProducts = async () => {
         setLoading(true);
-        setProducts(dummyProducts.filter((p) => p.category === category || category === ''));
-        setLoading(false);
+
+        try {
+            const params = new URLSearchParams();
+            
+            if (category) params.set("category", category);
+            if (organic) params.set("organic", String(organic));
+            if (sort) params.set("sort", sort);
+            if (minPrice) params.set("minPrice", minPrice);
+            if (maxPrice) params.set("maxPrice", maxPrice);
+
+            params.set("page", String(page));
+            params.set("limit", "12");
+
+            const { data } = await api.get(`/products?${params.toString()}`);
+
+            setProducts(data.data.products || []);
+            setTotalPages(data.data.pages || 1);
+
+        } catch (error : any) {
+            toast.error(error.response?.data?.message || error?.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const updateFilter = (key: string, value: string) => {
@@ -56,7 +79,7 @@ export function Products() {
     return (
         <div className="min-h-screen bg-app-cream">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                
+
                 {/* BreadCrumb */}
                 <nav className="flex items-center gap-2 text-sm text-app-text-light mb-6">
                     <Link to='/' className="hover:text-app-green transition-colors">
@@ -66,7 +89,7 @@ export function Products() {
                     <span className="text-app-green font-medium">{activeCategory ? activeCategory.name : "All Products"}</span>
                 </nav>
                 <div className="flex gap-8 xl:gap-10">
-                    
+
                     {/* Sidebar - Desktop */}
                     <aside className="hidden lg:block w-64 shrink-0">
                         <div className="bg-white rounded-2xl p-4 sticky top-24">
@@ -81,10 +104,10 @@ export function Products() {
                             />
                         </div>
                     </aside>
-                    
+
                     {/* Main Content */}
                     <main className="flex-1">
-                        
+
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6">
                             <div>
@@ -92,12 +115,12 @@ export function Products() {
                                 <p className="text-sm text-app-text-light mt-0.5">{products.length} products found</p>
                             </div>
                             <div className="flex flex-col lg:items-center gap-3">
-                                
+
                                 {/* Mobile Filter Toggle */}
                                 <button onClick={() => setMobileFiltersOpen(true)} className="lg:hidden flex items-center gap-2 px-3 py-2 text-sm bg-white rounded-xl border border-app-border hover:bg-app-cream transition-colors">
                                     <SlidersHorizontal className="size-4" /> Filters
                                 </button>
-                                
+
                                 {/* Sort */}
                                 <div className="relative">
                                     <select value={sort} onChange={(e) => updateFilter('sort', e.target.value)} className="appearance-none pl-3 pr-8 py-2 text-sm bg-white rounded-xl border border-app-border focus:border-r-app-green outline-none cursor-pointer">
@@ -111,7 +134,7 @@ export function Products() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Products Grid */}
                         {loading ? (
                             <Loading />
@@ -126,11 +149,11 @@ export function Products() {
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 xl:gap-8">
                                 {products.map((product) => product.stock > 0 && (
-                                    <ProductCard key={product._id} product={product} />
+                                    <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
                         )}
-                        
+
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex-center gap-2 mt-16">
@@ -148,7 +171,7 @@ export function Products() {
                     </main>
                 </div>
             </div>
-            
+
             {/* Mobile Filters Model */}
             {mobileFiltersOpen && (
                 <>
