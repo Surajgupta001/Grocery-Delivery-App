@@ -19,6 +19,7 @@ export const getFlashDeals = async (req: Request, res: Response) => {
 
         return {
             ...p,
+            id: p.id,
             discount,
         }
 
@@ -81,6 +82,7 @@ export const getProducts = async (req: Request, res: Response) => {
 
         return {
             ...p,
+            id: p.id,
             discount,
         }
     })
@@ -124,6 +126,7 @@ export const getProductById = async (req: Request, res: Response) => {
             data: {
                 product: {
                     ...product,
+                    id: product.id,
                     discount,
                 }
             }
@@ -142,18 +145,61 @@ export const createProduct = async (req: Request, res: Response) => {
             success: true,
             message: 'Product created successfully',
             data: {
-                product,
+                product: {
+                    ...product,
+                    id: product.id,
+                },
             }
         });
 };
 
 // PUT /api/products/:id
 export const updateProduct = async (req: Request, res: Response) => {
-    const product = await prisma.product.update({
+    try {
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No fields to update provided",
+            });
+        }
+
+        const product = await prisma.product.update({
+            where: {
+                id: req.params.id as string,
+            },
+            data: req.body,
+        })
+
+        res
+            .status(200)
+            .json({
+                success: true,
+                message: 'Product updated successfully',
+                data: {
+                    product: {
+                        ...product,
+                        id: product.id,
+                    },
+                }
+            });
+    } catch (error) {
+        console.error("Error updating product:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error updating product",
+        });
+    }
+};
+
+// DELETE /api/products/:id
+export const deleteProduct = async (req: Request, res: Response) => {
+    await prisma.product.update({
         where: {
             id: req.params.id as string,
         },
-        data: req.body,
+        data: {
+            stock: Number(0),
+        }
     })
 
     res
@@ -161,24 +207,5 @@ export const updateProduct = async (req: Request, res: Response) => {
         .json({
             success: true,
             message: 'Product updated successfully',
-            data: {
-                product,
-            }
-        });
-};
-
-// DELETE /api/products/:id
-export const deleteProduct = async (req: Request, res: Response) => {
-    await prisma.product.delete({
-        where: {
-            id: req.params.id as string,
-        },
-    })
-
-    res
-        .status(200)
-        .json({
-            success: true,
-            message: 'Product deleted successfully',
         });
 };

@@ -12,9 +12,12 @@ import { functions, inngest } from "./inngest/index.js";
 import { serve } from "inngest/express";
 import addressRouter from "./routes/address.routes.js";
 import deliveryPartnerRouter from "./routes/deliveryPartner.routes.js";
+import { stripeWebhookHandler } from "./controllers/stripeWebhooks.controllers.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+app.post('/api/v1/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 
 // Middleware
 app.use(cors());

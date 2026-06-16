@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PackageIcon, UsersIcon, ShoppingBagIcon, AlertTriangleIcon } from "lucide-react";
 import Loading from "../../components/Loading";
-import { dummyAdminDashboardData, statusColors } from "../../assets/assets";
+import {  statusColors } from "../../assets/assets";
+import api from "../../config/api";
 
 interface Stats {
     totalOrders: number;
@@ -20,10 +21,13 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setTimeout(() => {
-            setStats(dummyAdminDashboardData);
-            setLoading(false);
-        }, 1000);
+        api.get("/admin/stats")
+            .then((res) => {
+                setStats(res.data.data);
+                setLoading(false);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
     }, []);
 
     const cards = stats
@@ -75,14 +79,14 @@ export default function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-app-border">
-                            {stats?.recentOrders.length === 0 ? (
+                            {(stats?.recentOrders ?? []).length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">No orders yet.</td>
                                 </tr>
                             ) : (
-                                stats?.recentOrders.map((order: any) => (
-                                    <tr key={order._id} className="hover:bg-zinc-50/50 transition-colors">
-                                        <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{order._id.slice(-6).toUpperCase()}</td>
+                                (stats?.recentOrders ?? []).map((order: any) => (
+                                    <tr key={order.id} className="hover:bg-zinc-50/50 transition-colors">
+                                        <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{order.id.slice(-6).toUpperCase()}</td>
                                         <td className="px-6 py-4">
                                             <p className="font-medium text-zinc-900">{order.user?.name || "—"}</p>
                                             <p className="text-xs text-zinc-500">{order.user?.email || ""}</p>

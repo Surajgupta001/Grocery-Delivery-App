@@ -1,11 +1,20 @@
 import { NavigationIcon, PackageIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { dummyDashboardOrdersData } from "../../assets/assets";
+import { useEffect, useRef, useState } from "react";
 import CancelModal from "../../components/Delivery/CancelModal";
 import DeliveryOrderCard from "../../components/Delivery/DeliveryOrderCard";
 import OtpModal from "../../components/Delivery/OtpModal";
 import Loading from "../../components/Loading";
 import type { Order } from "../../types";
+import axios from "axios";
+import toast from "react-hot-toast";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+
+const getAuthHeaders = () => ({
+    headers: {
+        Authorization: `Bearer ${localStorage.getItem("delivery_token")}`,
+    }
+})
 
 export default function DeliveryDashboard() {
 
@@ -23,39 +32,111 @@ export default function DeliveryDashboard() {
     const [cancelModal, setCancelModal] = useState<string | null>(null);
     const [cancelReason, setCancelReason] = useState("");
 
+    const watchIdRef = useRef<number | null>(null);
+
     const fetchOrders = async () => {
         setLoading(true);
-        setOrders(dummyDashboardOrdersData as any);
-        setLoading(false);
+        try {
+            const { data } = await axios.get(`${API_URL}/delivery/my-deliveries?status=${tab}`, getAuthHeaders());
+            setOrders(data.orders || []);
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || error?.message || "Failed to fetch deliveries");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         fetchOrders();
     }, [tab]);
 
+    // send location every 10 sec for active deliveries
+    useEffect(() => {
+        const activeOrders = orders.filter((o) => ["Assigned", "Packed", "Out for Delivery"].includes(o.status));
+
+        if (activeOrders.length === 0 || !tracking) {
+            if (watchIdRef.current !== null) {
+                navigator.geolocation.clearWatch(watchIdRef.current as number);
+                watchIdRef.current = null;
+            }
+            return;
+        }
+
+        const sendLocation = (position: GeolocationPosition) => {
+            const { latitude: lat, longitude: lng } = position.coords;
+            activeOrders.forEach(async (order) => {
+                await axios.put(
+                    `${API_URL}/delivery/my-deliveries/${order.id}/location`,
+                    { lat, lng },
+                    getAuthHeaders()
+                )
+                .catch(() => {});
+            });
+        };
+
+        watchIdRef.current = navigator.geolocation.watchPosition(sendLocation, () => {}, {
+            enableHighAccuracy: true,
+            maximumAge: 10000,
+        });
+
+        // Also send on interval for more consistent updates
+        const interval = setInterval(() => {
+            navigator.geolocation.getCurrentPosition(sendLocation, () => {}, {
+                enableHighAccuracy: true,
+                maximumAge: 10000,
+            });
+        }, 10000); // 10 seconds
+
+        return () => {
+            if (watchIdRef.current !== null) {
+                navigator.geolocation.clearWatch(watchIdRef.current as number);
+                watchIdRef.current = null;
+            }
+            clearInterval(interval);
+        };
+    }, [tracking, orders]);
+
     const handleUpdateStatus = async (orderId: string, status: string) => {
-        console.log(orderId, status);
+        try {
+            await axios.put(`${API_URL}/delivery/my-deliveries/${orderId}/status`, { status }, getAuthHeaders());
+            toast.success(`Delivery status updated to ${status}`);
+            fetchOrders();
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || error?.message || "Failed to update status");
+        }
     };
 
     const handleComplete = async () => {
         if (!otpModal || !otp) return;
         setSubmitting(true);
-        setTimeout(() => {
-            setSubmitting(false);
+        try {
+            await axios.put(`${API_URL}/delivery/my-deliveries/${otpModal}/completed`, { otp }, getAuthHeaders());
+            toast.success("Delivery completed successfully!");
             setOtpModal(null);
             setOtp("");
-        }, 1000);
+            fetchOrders();
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || error?.message || "Failed to complete delivery");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleCancel = async () => {
         if (!cancelModal) return;
         setSubmitting(true);
-        setTimeout(() => {
-            setSubmitting(false);
+        try {
+            await axios.put(`${API_URL}/delivery/my-deliveries/${cancelModal}/cancel`, { reason: cancelReason }, getAuthHeaders());
+            toast.success("Delivery cancelled successfully");
             setCancelModal(null);
             setCancelReason("");
-        }, 1000);
-    }
+            fetchOrders();
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || error?.message || "Failed to cancel delivery");
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -85,7 +166,7 @@ export default function DeliveryDashboard() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {orders.map((order) => <DeliveryOrderCard key={order._id} order={order} tab={tab} handleUpdateStatus={handleUpdateStatus} setOtpModal={setOtpModal} setCancelModal={setCancelModal} />)}
+                    {orders.map((order) => <DeliveryOrderCard key={order.id} order={order} tab={tab} handleUpdateStatus={handleUpdateStatus} setOtpModal={setOtpModal} setCancelModal={setCancelModal} />)}
                 </div>
             )}
 

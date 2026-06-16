@@ -1,26 +1,28 @@
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/useCart";
-import { dummyAddressData } from "../assets/assets";
 import { useState, useEffect } from "react";
 import type { Address } from "../types";
 import { ArrowLeft, CheckIcon, ChevronRightIcon, CreditCardIcon, MapPinIcon } from "lucide-react";
 import CheckoutAddress from "../components/Checkout/CheckoutAddress";
 import CheckoutPayment from "../components/Checkout/CheckoutPayment";
 import CheckoutReview from "../components/Checkout/CheckoutReview";
-const user = { addresses: dummyAddressData };
+import api from "../config/api";
+import toast from "react-hot-toast";
+import { useAuth } from "../context/useAuth";
 
 export function Checkout() {
 
     const navigate = useNavigate();
     const currency = import.meta.env.VITE_APP_CURRENCY_SYMBOL || "$";
 
-    const { items, cartTotal } = useCart();
+    const { items, cartTotal, clearCart } = useCart();
+    const { user } = useAuth();
 
     const [step, setStep] = useState('address');
     const [loading, setLoading] = useState(false);
 
     const [address, setAddress] = useState<Address>({
-        _id: '',
+        id: '',
         label: 'Home',
         address: '',
         city: '',
@@ -51,7 +53,33 @@ export function Checkout() {
 
     const handlePlaceOrder = async () => {
         setLoading(true);
-        navigate('/orders');
+        
+        try {
+            const orderData = {
+                items: items.map((item) => ({
+                    product: item.product.id,
+                    quantity: item.quantity,
+                })),
+                shippingAddress: address,
+                paymentMethod,
+            }
+
+            const { data } = await api.post("/orders", orderData);
+            // console.log("Order placed successfully:", data);
+
+            if (data.url) {
+                window.location.href = data.url; // Redirect to the payment gateway
+                return;
+            }
+            clearCart();
+            toast.success("Order placed successfully!");
+            navigate(`/orders/${data.data.id}`);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || error.message)
+        } finally {
+            setLoading(false);
+            scrollTo(0, 0); // Scroll to top after placing order
+        }
     };
 
     // Populate address from user's default address
@@ -61,7 +89,7 @@ export function Checkout() {
                 const defaultAddr = user.addresses.find((addr) => addr.isDefault) || user.addresses[0];
                 if (defaultAddr) {
                     setAddress({
-                        _id: defaultAddr._id || '',
+                        id: defaultAddr.id || '',
                         label: defaultAddr.label || 'Home',
                         address: defaultAddr.address || '',
                         city: defaultAddr.city || '',
@@ -117,7 +145,7 @@ export function Checkout() {
                     {/* Main Form */}
                     <div className="md:col-span-2">
                         {step === 'address' && (
-                            <CheckoutAddress address={address} setAddress={setAddress} setStep={setStep} user={user} />
+                            <CheckoutAddress address={address} setAddress={setAddress} setStep={setStep} user={user!} />
                         )}
                         {step === 'payment' && (
                             <CheckoutPayment paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} setStep={setStep} />

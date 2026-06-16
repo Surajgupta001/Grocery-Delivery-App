@@ -14,11 +14,17 @@ export const uploadImage = async (req: Request, res: Response) => {
 
         const dataURI = `data:${req.file.mimetype};base64,${base64}`;
 
+        const sanitizedFilename = req.file.originalname
+            .split('.')
+            .slice(0, -1)
+            .join('.')
+            .replace(/[^a-zA-Z0-9]/g, "_");
+
         const result = await cloudinary.uploader.upload(
             dataURI,
             {
                 folder: "grocery-delivery-app/products",
-                public_id: `${Date.now()}-${req.file.originalname}`,
+                public_id: `${Date.now()}-${sanitizedFilename}`,
                 resource_type: "auto",
             }
         );
@@ -31,12 +37,12 @@ export const uploadImage = async (req: Request, res: Response) => {
                 public_id: result.public_id,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error uploading file:", error);
 
         return res.status(500).json({
             success: false,
-            message: "Error uploading file",
+            message: error?.message || (typeof error === "string" ? error : JSON.stringify(error)) || "Error uploading file",
         });
     }
 };

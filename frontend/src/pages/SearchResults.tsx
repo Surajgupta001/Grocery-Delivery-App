@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Product } from "../types";
 import { Link, useSearchParams } from "react-router-dom";
-import { dummyProducts } from "../assets/assets";
 import { Home, Search } from "lucide-react";
 import Loading from "../components/Loading";
 import { ProductCard } from "../components/ProductCard";
+import api from "../config/api";
+import toast from "react-hot-toast";
 
 export function SearchResults() {
 
@@ -15,20 +16,16 @@ export function SearchResults() {
     const query = searchParams.get("q") || "";
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (!query) {
-                setProducts([]);
-                setLoading(false);
-                return;
-            }
-            setLoading(true);
-            const filtered = dummyProducts.filter((p: Product) =>
-                p.name.toLowerCase().includes(query.toLowerCase())
-            );
-            setProducts(filtered);
-            setLoading(false);
-        }, 0);
-        return () => clearTimeout(timer);
+        if (!query) return;
+        setLoading(true);
+
+        // API call to fetch search results based on query
+        api.get(`/products?search=${encodeURIComponent(query)}`)
+            .then((res) => setProducts(res.data.data.products || []))
+            .catch((error) => {
+                toast.error(error.response?.data?.message || error?.message);
+            })
+            .finally(() => setLoading(false));
     }, [query]);
 
     return (
@@ -52,7 +49,7 @@ export function SearchResults() {
                 {/* Results */}
                 {loading ? (
                     <Loading />
-                ) : products.length === 0 ?(
+                ) : products.length === 0 ? (
                     <div className="text-center py-20">
                         <Search className="size-16 text-app-border mx-auto mb-4" />
                         <h2 className="text-lg font-medium text-app-green mb-2">No results found</h2>
@@ -64,7 +61,7 @@ export function SearchResults() {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         {products.map((product) => (
-                            <ProductCard key={product._id} product={product} />
+                            <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                 )}

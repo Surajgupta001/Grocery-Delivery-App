@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import type { Address } from "../types";
-import { dummyAddressData } from "../assets/assets";
 import { MapPinIcon, PlusIcon } from "lucide-react";
 import Loading from "../components/Loading";
 import { AddressCard } from "../components/AddressCard";
 import { AddressForm } from "../components/AddressForm";
+import { useAuth } from "../context/useAuth";
+import toast from "react-hot-toast";
+import api from "../config/api";
 
 export function Address() {
+
+    const { updateUser } = useAuth();
 
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
@@ -34,8 +38,65 @@ export function Address() {
         setShowForm(false);
     }
 
+    const getLocation = (retries = 3): Promise<{ lat: number, lng: number }> => {
+        return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error("Geolocation is not supported by your browser"));
+            return;
+        }
+
+        const attempt = () => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    })
+                },
+                (_error: any) => {
+                    if (retries > 0) {
+                        retries--;
+                        setTimeout(attempt, 1000);
+                    } else {
+                        reject(new Error("Unable to retrieve your location. Please allow location access and try again."));
+                    }
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 60000
+                }
+            )
+        };
+        attempt();
+    })
+    };
+
     const handleSumbit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        try {
+            const coords = await getLocation();
+            const payload = {
+                ...form,
+                ...coords
+            }
+
+            if (editingId) {
+                const { data } = await api.put(`/addresses/${editingId}`, payload);
+                setAddresses(data.data);
+                updateUser({ addresses: data.data });
+                toast.success("Address updated successfully");
+            } else {
+                const { data } = await api.post("/addresses", payload);
+                setAddresses(data.data);
+                updateUser({ addresses: data.data });
+                toast.success("Address added successfully");
+            }
+            resetForm();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || error?.message);
+        }
     };
 
     const onEditHandler = (add: Address) => {
@@ -47,19 +108,25 @@ export function Address() {
             zip: add.zip,
             isDefault: add.isDefault
         });
-        setEditingId(add._id);
+        setEditingId(add.id);
         setShowForm(true);
     };
 
     useEffect(() => {
-        setAddresses(dummyAddressData);
-        setTimeout(() => setLoading(false), 1000);
+        api.get("/addresses")
+            .then(({ data }) => {
+                setAddresses(data.data);
+            })
+            .catch((error: any) => {
+                toast.error(error.response?.data?.message || error?.message);
+            })
+            .finally(() => setLoading(false));
     }, []);
 
     return (
         <div className="min-h-screen bg-app-cream">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                
+
                 {/* Page Header */}
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-2xl font-semibold text-app-green">Addresses</h1>
@@ -67,7 +134,7 @@ export function Address() {
                         <PlusIcon className="size-5" /> Add New Address
                     </button>
                 </div>
-                
+
                 {/* Form Modal */}
                 {showForm && (
                     <AddressForm
@@ -78,7 +145,7 @@ export function Address() {
                         editingId={editingId}
                     />
                 )}
-                
+
                 {/* Address List */}
                 {loading ? (
                     <Loading />
@@ -91,7 +158,7 @@ export function Address() {
                 ) : (
                     <div className="space-y-4">
                         {addresses.map((add) => (
-                            <AddressCard addr={add} onEditHandler={onEditHandler} setAddresses={setAddresses} />
+                            <AddressCard key={add.id} addr={add} onEditHandler={onEditHandler} setAddresses={setAddresses} />
                         ))}
                     </div>
                 )}

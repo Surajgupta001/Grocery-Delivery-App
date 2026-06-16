@@ -3,10 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../components/Loading";
 import { ArrowLeftIcon, MapPinIcon, CalendarIcon, PhoneIcon } from "lucide-react";
 import type { Order } from "../types";
-import { dummyDashboardOrdersData, statusColors } from "../assets/assets";
+import { statusColors } from "../assets/assets";
 import OrderOTP from "../components/OrderTracking/OrderOTP";
 import LiveMap from "../components/OrderTracking/LiveMap";
 import OrderTimeLine from "../components/OrderTracking/OrderTimeLine";
+import api from "../config/api";
 
 export function OrderTracking() {
     const { id } = useParams();
@@ -16,23 +17,57 @@ export function OrderTracking() {
 
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
-    const [liveLocation, setLiveLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [liveLocation, setLiveLocation] = useState<{ lat: number; lng: number; updatedAt?: string } | null>(null);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            const foundOrder = dummyDashboardOrdersData.find((o) => o._id === id);
-            if (foundOrder) {
-                setOrder(foundOrder as unknown as Order);
-                if (foundOrder.liveLocation) {
-                    setLiveLocation(foundOrder.liveLocation);
+        api.get(`/orders/${id}`)
+            .then((res) => {
+                const fetchedOrder = res.data.data;
+                setOrder(fetchedOrder);
+                if (fetchedOrder?.liveLocation) {
+                    setLiveLocation(fetchedOrder.liveLocation);
                 }
-            } else {
-                setOrder(null);
+            })
+            .catch(() => navigate("/orders"))
+            .finally(() => setLoading(false));
+    }, [id, navigate]);
+
+    // Live location every 10 seconds
+    useEffect(() => {
+        if (!order || ["Delivered", "Cancelled", "Placed"].includes(order.status)) return;
+
+        const fetchLocation = async () => {
+            try {
+                const { data } = await api.get(`/orders/${id}/location`)
+
+                if (data.liveLocation?.lat && data.liveLocation?.lng) {
+                    setLiveLocation((prev) => {
+                        const newLat = data.liveLocation.lat;
+                        const newLng = data.liveLocation.lng;
+                        const newUpdatedAt = data.liveLocation.updatedAt;
+                        if (!prev || prev.lat !== newLat || prev.lng !== newLng || (newUpdatedAt && prev.updatedAt !== newUpdatedAt)) {
+                            return {
+                                lat: newLat,
+                                lng: newLng,
+                                updatedAt: newUpdatedAt,
+                            };
+                        }
+                        return prev;
+                    });
+                }
+
+                // Aslo update order status of it changed
+                if (data.status && data.status !== order.status) {
+                    setOrder((prev) => prev ? { ...prev, status: data.status } : prev);
+                }
+            } catch {
+                
             }
-            setLoading(false);
-        }, 0);
-        return () => clearTimeout(timer);
-    }, [id]);
+        }
+        fetchLocation();
+        const interval = setInterval(fetchLocation, 10000); // 10 seconds
+        return () => clearInterval(interval);
+    }, [id, order?.status]);
 
     if (loading) return <Loading />;
 
@@ -60,7 +95,7 @@ export function OrderTracking() {
                 {/* Order id, date, status */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-2xl font-semibold text-app-green">Order #{order._id.slice(-8).toUpperCase()}</h1>
+                        <h1 className="text-2xl font-semibold text-app-green">Order #{order.id.slice(-8).toUpperCase()}</h1>
                         <p className="text-sm text-app-text-light mt-1 flex items-center gap-1">
                             <CalendarIcon className="size-3.5" />
                             Placed on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
