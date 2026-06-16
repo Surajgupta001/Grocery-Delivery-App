@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -22,6 +17,8 @@ model User {
   orders    Order[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@index([email])
 }
 
 model Address {
@@ -38,6 +35,9 @@ model Address {
   lng       Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isDefault])
 }
 
 model Product {
@@ -55,6 +55,11 @@ model Product {
   reviewCount   Int?     @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([category])
+  @@index([price])
+  @@index([stock])
+  @@index([category, price])
 }
 
 model Order {
@@ -79,6 +84,12 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([deliveryPartnerId])
+  @@index([userId, status])
+  @@index([status, createdAt])
 }
 
 model DeliveryPartner {
@@ -93,4 +104,7 @@ model DeliveryPartner {
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([email])
+  @@index([isActive])
 }
